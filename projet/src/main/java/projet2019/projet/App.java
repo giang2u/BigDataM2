@@ -33,28 +33,44 @@ public class App
 {
     public static void main( String[] args ) throws InterruptedException
     {
-    	
-    	
-    	 SparkSession spark = SparkSession
-    		      .builder()
-    		      .appName("App")
-    		      .config("spark.master", "local")
-    		      .getOrCreate();
+   	 SparkSession spark = SparkSession
+		      .builder()
+		      .appName("App")
+		      .config("spark.master", "local")
+		      .getOrCreate();
+   	 
+
+	 Scanner sc = new Scanner(System.in);
+	 String rep = " ";
+	 do{ 
+		 System.out.println("Veuillez saisir cf ou cp : ");
+		 rep= sc.nextLine();
+	 }
+	 while(!rep.equals("cf") && !rep.equals("cp") ) ;
+	 int rep2 = 0;
+	 do{ 
+		 System.out.println("Choix entre partie 1 (Q1 à Q4) ou partie 2 (Q5 à Q10");
+		 System.out.println("Veuillez saisir 1 ou 2 : ");
+		 rep2= sc.nextInt();
+	 }
+	 while(rep2 !=1 && rep2 !=2 ) ;
+	 
+	 if(rep2==1) {
+		 partie1(rep,spark);
+	 }else {
+		 partie2(rep,spark);
+	 }
+   	 
+    }
+    public static void partie1(String chemin,SparkSession spark) {
+
 
     	 
     	 // -------------------Q1)----------------------------
     	 
 
-    	 Scanner sc = new Scanner(System.in);
-    	 String rep = " ";
-    	 do{ 
-    		 System.out.println("Veuillez saisir cf ou cp : ");
-    		 rep= sc.nextLine();
-    		 System.out.println(rep);
-    	 }
-    	 while(!rep.equals("cf") && !rep.equals("cp") ) ;
     	
-		 JavaRDD<String> lines = spark.read().textFile("EVC-TXT/"+rep+"/*.txt").javaRDD();
+		 JavaRDD<String> lines = spark.read().textFile("EVC-TXT/"+chemin+"/*.txt").javaRDD();
 
 
      	 
@@ -99,12 +115,17 @@ public class App
     	 // TOP TEN BEST WORDS
     	 System.out.println(motFiltrer.take(10));
     	 
+    }
+    public static void partie2(String chemin, SparkSession spark) {
     	 
-    	 // Q5) ------------------------------------------------
+    	// recupere toutes les lignes des fichiers french-stop
+    	JavaRDD<String> lines2 = spark.read().textFile("EVC-TXT/french-stopwords.txt").javaRDD();
+    	List<String> listStopWord = lines2.collect();
+    	// Q5) ------------------------------------------------
     	 
     	 
     	 
-    	 File dir = new File("EVC-TXT/cf");
+    	 File dir = new File("EVC-TXT/"+chemin);
     	 List<Row> data = new ArrayList<Row>();
     	 for (File f : dir.listFiles()) {
     		 
