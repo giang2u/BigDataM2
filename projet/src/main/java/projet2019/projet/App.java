@@ -42,25 +42,34 @@ public class App
 
 	 Scanner sc = new Scanner(System.in);
 	 String rep = " ";
+	 int rep2 = 0;
+	 double minConf = -1.0;
+	 double minSup = -1.0;
 	 do{ 
 		 System.out.println("Veuillez saisir cf ou cp : ");
 		 rep= sc.nextLine();
 	 }
 	 while(!rep.equals("cf") && !rep.equals("cp") ) ;
-	 int rep2 = 0;
+
 	 do{ 
-		 System.out.println("Choix entre partie 1 (Q1 à Q4) ou partie 2 (Q5 à Q10");
+		 System.out.println("Choix entre partie 1 (Q1 à Q4) ou partie 2 (Q5 à Q10)");
 		 System.out.println("Veuillez saisir 1 ou 2 : ");
 		 rep2= sc.nextInt();
 	 }
 	 while(rep2 !=1 && rep2 !=2 ) ;
-	 
+
 	 if(rep2==1) {
 		 partie1(rep,spark);
 	 }else {
-		 partie2(rep,spark);
+		 do{ 
+			 System.out.println("Veuillez saisir la valeur de minSup (entre 0,0 et 1,0): ");
+			 minSup = sc.nextDouble();
+			 System.out.println("Veuillez saisir la valeur de minconf (entre 0,0 et 1,0): ");
+			 minConf= sc.nextDouble();
+		 }while(minSup<0 ||minSup >1 ||minConf<0 ||minConf >1);
+		 partie2(rep,spark,minSup,minConf);
 	 }
-   	 
+	 sc.close();
     }
     public static void partie1(String chemin,SparkSession spark) {
 
@@ -116,7 +125,7 @@ public class App
     	 System.out.println(motFiltrer.take(10));
     	 
     }
-    public static void partie2(String chemin, SparkSession spark) {
+    public static void partie2(String chemin, SparkSession spark,double minSup, double minConf) {
     	 
     	// recupere toutes les lignes des fichiers french-stop
     	JavaRDD<String> lines2 = spark.read().textFile("EVC-TXT/french-stopwords.txt").javaRDD();
@@ -157,13 +166,10 @@ public class App
     	 Dataset<Row> datas = spark.createDataFrame(data, schema);
     	 
     	 
-    	 FPGrowthModel fpg = new FPGrowth().setItemsCol("items").setMinSupport(0.2).fit(datas);
+    	 FPGrowthModel fpg = new FPGrowth().setItemsCol("items").setMinSupport(minSup).setMinConfidence(minConf).fit(datas);
     	 fpg.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
-    	 
-    	 
-    	 
-    		    
-        System.out.println( "Hello World!" );
+    	 //fpg.freqItemsets().show(100,false);
+
     }
 }
 
