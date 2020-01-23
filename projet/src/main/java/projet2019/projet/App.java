@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec._;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.fpm.FPGrowth;
@@ -45,6 +44,7 @@ public class App
 	 int rep2 = 0;
 	 double minConf = -1.0;
 	 double minSup = -1.0;
+	 int k = -1;
 	 do{ 
 		 System.out.println("Veuillez saisir cf ou cp : ");
 		 rep= sc.nextLine();
@@ -66,8 +66,10 @@ public class App
 			 minSup = sc.nextDouble();
 			 System.out.println("Veuillez saisir la valeur de minconf (entre 0,0 et 1,0): ");
 			 minConf= sc.nextDouble();
-		 }while(minSup<0 ||minSup >1 ||minConf<0 ||minConf >1);
-		 partie2(rep,spark,minSup,minConf);
+			 System.out.println("Veuillez saisir le nombre k de résultats à afficher: ");
+			 k= sc.nextInt();
+		 }while(minSup<0 ||minSup >1 ||minConf<0 ||minConf >1 || k<=0);
+		 partie2(rep,spark,minSup,minConf,k);
 	 }
 	 sc.close();
     }
@@ -92,10 +94,12 @@ public class App
     	 
     	 //------- Q2)------------------------------
     	 
-    	 long nbDiff = mot.count();
+
     	 
     	 // enleve les caracteres vides 
     	 JavaPairRDD<String, Integer> mot2 = mot.filter( word -> !word._1.equals(""));
+    	 
+    	 long nbDiff = mot.count();
     	 
     	 // echange cle value et trie par occurence puis les remet comme avant
     	 JavaPairRDD<String, Integer> motTrie = mot2.mapToPair(s -> s.swap()).sortByKey(false).mapToPair(s -> s.swap());
@@ -125,7 +129,7 @@ public class App
     	 System.out.println(motFiltrer.take(10));
     	 
     }
-    public static void partie2(String chemin, SparkSession spark,double minSup, double minConf) {
+    public static void partie2(String chemin, SparkSession spark,double minSup, double minConf,int k) {
     	 
     	// recupere toutes les lignes des fichiers french-stop
     	JavaRDD<String> lines2 = spark.read().textFile("EVC-TXT/french-stopwords.txt").javaRDD();
@@ -159,7 +163,7 @@ public class App
     	 
     	 
     	 
-    	 // Q7) -------------------------
+    	 // Q7-10) -------------------------
     	 
     	 StructType schema = new StructType(new StructField[] {new StructField("items", new ArrayType(DataTypes.StringType, true), false,Metadata.empty() ) } );
     	 
@@ -167,8 +171,10 @@ public class App
     	 
     	 
     	 FPGrowthModel fpg = new FPGrowth().setItemsCol("items").setMinSupport(minSup).setMinConfidence(minConf).fit(datas);
-    	 fpg.freqItemsets().orderBy(functions.col("freq").desc()).show(false);
-    	 //fpg.freqItemsets().show(100,false);
+    	 
+
+    	 fpg.freqItemsets().orderBy(functions.col("freq").desc()).show(k,false);
+    	 
 
     }
 }
