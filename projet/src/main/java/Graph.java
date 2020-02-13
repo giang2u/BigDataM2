@@ -17,7 +17,7 @@ public class Graph {
         JavaSparkContext sc = new JavaSparkContext(conf);
         SQLContext sqlContext = new org.apache.spark.sql.SQLContext(sc);
         SparkSession spark = SparkSession.builder().appName("BigData").getOrCreate();
-
+        spark.sparkContext().setLogLevel("ERROR");
         
         /*
          
@@ -106,15 +106,15 @@ public class Graph {
                 .add("DST", "string").add("Tz database time zone", "string").add("Type", "string").add("Source", "string");
 
 
-        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema).csv("src/main/resources/airports.dat");
+        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema).csv("EVC-TXT/airports.dat");
         
       
         StructType routeSchemav2 = new StructType().add("src", "int").add("source", "string")
                 .add("dst", "int").add("dest", "string").add("dep_delay", "double")
                 .add("dep_delay_new", "double").add("dep_del15", "double");
 
-        Dataset<Row> edgesv2 = spark.read().option("mode", "DROPMALFORMED").option("header", "true").schema(routeSchemav2).csv("src/main/resources/routesv2.csv");
-        
+       // Dataset<Row> edgesv2 = spark.read().option("mode", "DROPMALFORMED").option("header", "true").schema(routeSchemav2).csv("EVC-TXT/routesv2.csv");
+        Dataset<Row> edgesv2 = spark.read().format("CSV").option("header", "true").schema(routeSchemav2).load("EVC-TXT/routesv2.csv");
         
         GraphFrame gv2 = new GraphFrame(verticesv2, edgesv2);
         
@@ -130,8 +130,22 @@ public class Graph {
         
         
         // Q12 ---------------------------
+   
+        Dataset<Row> sfoAndSea = gv2.edges().filter("(source = 'SFO' AND dest = 'JAC') OR (source='JAC' AND dest='SEA') ");
+        sfoAndSea.show(false);
         
-        Dataset<Row> trajetSJS = gv2.find("(SFO)-[]->(JAC); (JAC)-[]->(SEA)");
+        //2 -----------------------
+        
+        sfoAndSea.filter("dep_delay < -5").show(false);
+        
+        //3-----------------
+        
+        Dataset <Row>destDepuisSfo = gv2.edges().filter("source = 'SFO'").select("dest").distinct();
+        destDepuisSfo.show(false);
+        
+        
+        //Dataset<Row> trajetSJS = gv2.find("(SFO)-[a1]->(JAC) ; (JAC)-[a2]->(SEA)").filter("SFO.IATA ='SFO'");
+        //System.out.println(trajetSJS.count());
         //trajetSJS.filter("SFO.IATA = 'JAC'").show();
         //trajetSJS.show();
         //trajetSJS.distinct().show();
