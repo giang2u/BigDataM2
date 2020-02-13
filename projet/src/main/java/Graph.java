@@ -19,7 +19,7 @@ public class Graph {
         SparkSession spark = SparkSession.builder().appName("BigData").getOrCreate();
         spark.sparkContext().setLogLevel("ERROR");
         
-        /*
+        
          
         //Question 2
         //On crée les vertices (airport) et les edges (route)
@@ -83,7 +83,10 @@ public class Graph {
        
        Dataset<Row> calcul = fusion.withColumn("yes", Indegree.col("inDegree").divide(Outdegree.col("outDegree") ) );
        
-       calcul.show();
+       Dataset<Row> calcul2 = calcul.withColumn("dist", functions.abs(( calcul.col("ratio").minus(1) )) );
+       
+       calcul2.orderBy( functions.col("dist").asc()).show();
+       
        
        
        
@@ -97,7 +100,7 @@ public class Graph {
        System.out.println("BONJOUR " + g.vertices().count() );
        System.out.println("BONJOUR " + g.edges().count() );
        
-       */
+       
        
        // Q11 -----------------------------------------------
        
