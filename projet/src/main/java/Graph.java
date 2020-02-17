@@ -79,8 +79,6 @@ public class Graph {
        Dataset<Row> fusion = Indegree.join(Outdegree, Indegree.col("id").equalTo(Outdegree.col("id")) );
      
        
-       //mot2.mapToPair( s -> s.swap() ).keys().reduce( (v1,v2) -> (v1+v2) );
-       
        Dataset<Row> calcul = fusion.withColumn("yes", Indegree.col("inDegree").divide(Outdegree.col("outDegree") ) );
        
        Dataset<Row> calcul2 = calcul.withColumn("dist", functions.abs(( calcul.col("ratio").minus(1) )) );
@@ -90,26 +88,26 @@ public class Graph {
        
        
        
-       // Q9 utiliser g.triangleCount().run()
+       // Q9 
        
        Dataset<Row> nbtriangle = g.triangleCount().run();
        nbtriangle.orderBy(functions.col("count").desc()).show();
        
        // Q10 --------------------------------------------
        
-       System.out.println("BONJOUR " + g.vertices().count() );
-       System.out.println("BONJOUR " + g.edges().count() );
+       System.out.println("Nombre d'aéroports " + g.vertices().count() );
+       System.out.println("Nombre de trajets " + g.edges().count() );
        
        
        
        // Q11 -----------------------------------------------
        
-        StructType airportSchema = new StructType().add("id", "int").add("Name", "string").add("City", "string").add("Country", "string").add("IATA", "string").add("ICAO", "string")
+        StructType airportSchema2 = new StructType().add("id", "int").add("Name", "string").add("City", "string").add("Country", "string").add("IATA", "string").add("ICAO", "string")
                 .add("Latitude", "double").add("Longitude", "double").add("Altitude", "int").add("Timezone", "int")
                 .add("DST", "string").add("Tz database time zone", "string").add("Type", "string").add("Source", "string");
 
 
-        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema).csv("EVC-TXT/airports.dat");
+        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema2).csv("EVC-TXT/airports.dat");
         
       
         StructType routeSchemav2 = new StructType().add("src", "int").add("source", "string")
@@ -124,12 +122,12 @@ public class Graph {
      
         // 1 ---------------------------
         
-        //gv2.edges().filter( "source = 'SFO'" ).orderBy(functions.col("dep_delay").desc()).show();
+        gv2.edges().filter( "source = 'SFO'" ).orderBy(functions.col("dep_delay").desc()).show();
         
         
         // 2 ------------------------------
         
-        //gv2.edges().filter( "source = 'SEA'" ).filter(" dep_delay > 10").select("source","dest", "dep_delay").show();
+        gv2.edges().filter( "source = 'SEA'" ).filter(" dep_delay > 10").select("source","dest", "dep_delay").show();
         
         
         // Q12 ---------------------------
