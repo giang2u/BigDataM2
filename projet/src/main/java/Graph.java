@@ -79,7 +79,7 @@ public class Graph {
        Dataset<Row> fusion = Indegree.join(Outdegree, Indegree.col("id").equalTo(Outdegree.col("id")) );
      
        
-       Dataset<Row> calcul = fusion.withColumn("yes", Indegree.col("inDegree").divide(Outdegree.col("outDegree") ) );
+       Dataset<Row> calcul = fusion.withColumn("ratio", Indegree.col("inDegree").divide(Outdegree.col("outDegree") ) );
        
        Dataset<Row> calcul2 = calcul.withColumn("dist", functions.abs(( calcul.col("ratio").minus(1) )) );
        
@@ -107,7 +107,7 @@ public class Graph {
                 .add("DST", "string").add("Tz database time zone", "string").add("Type", "string").add("Source", "string");
 
 
-        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema2).csv("EVC-TXT/airports.dat");
+        Dataset<Row> verticesv2 = spark.read().option("mode", "DROPMALFORMED").schema(airportSchema2).csv("src/main/resources/airports.dat");
         
       
         StructType routeSchemav2 = new StructType().add("src", "int").add("source", "string")
@@ -115,7 +115,7 @@ public class Graph {
                 .add("dep_delay_new", "double").add("dep_del15", "double");
 
        // Dataset<Row> edgesv2 = spark.read().option("mode", "DROPMALFORMED").option("header", "true").schema(routeSchemav2).csv("EVC-TXT/routesv2.csv");
-        Dataset<Row> edgesv2 = spark.read().format("CSV").option("header", "true").schema(routeSchemav2).load("EVC-TXT/routesv2.csv");
+        Dataset<Row> edgesv2 = spark.read().format("CSV").option("header", "true").schema(routeSchemav2).load("src/main/resources/routesv2.csv");
         
         GraphFrame gv2 = new GraphFrame(verticesv2, edgesv2);
         
